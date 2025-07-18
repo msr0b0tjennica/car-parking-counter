@@ -1,8 +1,8 @@
-# Car Parking Space Counter 🚗🅿️
+# Car Parking Space Counter 
 
 This is a simple parking space detection system built using OpenCV in Python. It detects free and occupied parking spots from a video file, webcam, or live RTSP stream using classical image processing techniques — no deep learning required.
 
-## 🚀 Features
+## Features
 
 - Detects occupied and free parking spots in real-time
 - Supports video files, RTSP streams, and webcam feed
@@ -10,7 +10,7 @@ This is a simple parking space detection system built using OpenCV in Python. It
 - Saves parking spot positions in a pickle file for reuse
 - Lightweight and fast (runs on CPU)
 
-## 📁 Files
+## Files
 
 | File                   | Description                                           |
 |------------------------|-------------------------------------------------------|
@@ -20,7 +20,7 @@ This is a simple parking space detection system built using OpenCV in Python. It
 | carPark.mp4            | Sample video file                                     |
 | carParkImg.png         | Sample top-down image used for initial marking        |
 
-## 💠 How to Run
+## How to Run
 
 ### 1. Mark Parking Spaces
 
@@ -53,14 +53,14 @@ python main.py carPark.mp4
 python main.py rtsp://username:password@ip_address/stream_path
 ```
 
-## 🧠 How It Works
+## How It Works
 
 - Applies grayscale, blur, adaptive thresholding, and dilation
 - Crops each marked parking spot area and counts non-zero pixels
 - If the pixel count is below a threshold, the space is marked as empty
 - Results are overlaid on the video frame in real-time
 
-## 💻 Requirements
+## Requirements
 
 - Python 3.6+
 - OpenCV
