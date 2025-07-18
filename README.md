@@ -15,4 +15,6 @@ This is a simple car parking space detection system built using OpenCV in Python
 
 ## How to Run
 1. Run `ParkingSpacePicker.py` to mark spots
-2. Run `main.py` to see occupancy in real-time
+2. Edit the line in `main.py` that opens the video stream:
+   ```python
+   cap = cv2.VideoCapture("carPark.mp4")  # or use an RTSP stream like: "rtsp://username:password@ip_address/..."
