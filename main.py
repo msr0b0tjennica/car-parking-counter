@@ -3,7 +3,13 @@ import pickle
 import cvzone
 import numpy as np
 
-cap = cv2.VideoCapture('carPark.mp4')
+#Handles video files, RTSP stream, and webcam if no iput is provided
+input_source = sys.argv[1] if len(sys.argv) > 1 else '0'
+
+if input_source === '0':
+    cap = cv2.VideoCapture(0)
+else:
+    cap = cv2.VideoCapture(input_source)
 
 with open('CarParkPos', 'rb') as f:
     posList = pickle.load(f)
