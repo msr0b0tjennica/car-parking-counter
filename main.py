@@ -2,62 +2,84 @@ import cv2
 import pickle
 import cvzone
 import numpy as np
+import sys
 
-#Handles video files, RTSP stream, and webcam if no iput is provided
-input_source = sys.argv[1] if len(sys.argv) > 1 else '0'
+# Constants
+PARKING_SPOT_WIDTH = 107
+PARKING_SPOT_HEIGHT = 48
+OCCUPIED_THRESHOLD = 900
+GAUSSIAN_BLUR_KERNEL = (3, 3)
+ADAPTIVE_THRESH_BLOCK_SIZE = 25
+ADAPTIVE_THRESH_CONSTANT = 16
 
-if input_source === '0':
-    cap = cv2.VideoCapture(0)
-else:
-    cap = cv2.VideoCapture(input_source)
+def load_parking_positions(filename):
+    try:
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+    except (FileNotFoundError, pickle.PickleError) as e:
+        print(f"Error loading parking positions: {e}")
+        return []
 
-with open('CarParkPos', 'rb') as f:
-    posList = pickle.load(f)
+def process_image_for_detection(img):
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_blur = cv2.GaussianBlur(img_gray, GAUSSIAN_BLUR_KERNEL, 1)
+    img_thresh = cv2.adaptiveThreshold(
+        img_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV, ADAPTIVE_THRESH_BLOCK_SIZE, ADAPTIVE_THRESH_CONSTANT
+    )
+    img_median = cv2.medianBlur(img_thresh, 5)
+    kernel = np.ones((3, 3), np.uint8)
+    return cv2.dilate(img_median, kernel, iterations=1)
 
-width, height = 107, 48
+def check_parking_space(img_pro, img_display, pos_list):
+    space_counter = 0
 
-def checkParkingSpace(imgPro):
-    spaceCounter = 0
+    for x, y in pos_list:
+        img_crop = img_pro[y:y + PARKING_SPOT_HEIGHT, x:x + PARKING_SPOT_WIDTH]
+        count = cv2.countNonZero(img_crop)
 
-    for pos in posList:
-        x, y = pos
-        imgCrop = imgPro[y:y + height, x:x + width]
-        count = cv2.countNonZero(imgCrop)
-
-        if count < 900:
+        if count < OCCUPIED_THRESHOLD:
             color = (0, 255, 0)
             thickness = 3
-            spaceCounter += 1
+            space_counter += 1
         else:
             color = (0, 0, 255)
             thickness = 1
 
-        cv2.rectangle(img, pos, (x + width, y + height), color, thickness)
+        cv2.rectangle(img_display, (x, y), (x + PARKING_SPOT_WIDTH, y + PARKING_SPOT_HEIGHT), color, thickness)
 
-    cvzone.putTextRect(img, f'Free: {spaceCounter}/{len(posList)}', (30, 50), scale=2, thickness=3, offset=20, colorR=(0, 200, 0))
+    cvzone.putTextRect(
+        img_display, f'Free: {space_counter}/{len(pos_list)}',
+        (30, 50), scale=2, thickness=3, offset=20, colorR=(0, 200, 0)
+    )
 
-while True:
-    success, img = cap.read()
+def main():
+    input_source = sys.argv[1] if len(sys.argv) > 1 else 0
+    cap = cv2.VideoCapture(input_source)
+    
+    if not cap.isOpened():
+        print("Error: Could not open video source")
+        return
 
-    if not success:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        continue
+    pos_list = load_parking_positions('CarParkPos')
+    if not pos_list:
+        print("Error: No parking positions loaded")
+        return
 
-    # Convert to grayscale and apply blur and threshold
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    imgBlur = cv2.GaussianBlur(imgGray, (3, 3), 1)
-    imgThreshold = cv2.adaptiveThreshold(imgBlur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                         cv2.THRESH_BINARY_INV, 25, 16)
-    imgMedian = cv2.medianBlur(imgThreshold, 5)
-    kernel = np.ones((3, 3), np.uint8)
-    imgDilate = cv2.dilate(imgMedian, kernel, iterations=1)
+    while True:
+        success, img = cap.read()
+        if not success:
+            break  # Or handle retries more robustly
 
-    checkParkingSpace(imgDilate)
+        processed_img = process_image_for_detection(img)
+        check_parking_space(processed_img, img, pos_list)
 
-    cv2.imshow("Image", img)
-    key = cv2.waitKey(20)
-    if key == ord('q'):
-        break
+        cv2.imshow("Parking Space Detection", img)
+        if cv2.waitKey(20) == ord('q'):
+            break
 
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
