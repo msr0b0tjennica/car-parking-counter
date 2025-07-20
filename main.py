@@ -55,9 +55,9 @@ def check_parking_space(img_pro, img_display, pos_list):
 
 def main():
     input_source = sys.argv[1] if len(sys.argv) > 1 else 0
-    cap = cv2.VideoCapture(input_source)
+    video_source = cv2.VideoCapture(input_source)
     
-    if not cap.isOpened():
+    if not video_source.isOpened():
         print("Error: Could not open video source")
         return
 
@@ -67,7 +67,7 @@ def main():
         return
 
     while True:
-        success, img = cap.read()
+        success, img = video_source.read()
         if not success:
             break  # Or handle retries more robustly
 
@@ -78,7 +78,7 @@ def main():
         if cv2.waitKey(20) == ord('q'):
             break
 
-    cap.release()
+    video_source.release()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
