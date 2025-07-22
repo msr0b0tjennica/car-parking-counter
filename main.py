@@ -1,6 +1,6 @@
 import cv2
 import pickle
-import cvzone
+import cvzone # type: ignore
 import numpy as np
 import sys
 

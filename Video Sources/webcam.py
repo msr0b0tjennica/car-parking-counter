@@ -10,7 +10,12 @@ class WebcamSource(BaseVideoSource):
         return self.cap.isOpened()
 
     def read(self):
-        return self.cap.read()
+        if self.cap is not None:
+            return self.cap.read()
+        else:
+            raise RuntimeError("Video stream not opened. Call open() first.")
+           
 
     def release(self):
-        self.cap.release()
+        if self.cap is not None:
+            self.cap.release()
