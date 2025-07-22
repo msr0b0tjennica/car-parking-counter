@@ -1,0 +1,13 @@
+parking:
+  spot_width: 107
+  spot_height: 48
+  occupied_threshold: 900
+
+preprocessing:
+  gaussian_blur_kernel: [3, 3]
+  adaptive_thresh_block_size: 25
+  adaptive_thresh_constant: 16
+
+adjustment:
+  brightness: 30
+  contrast: 1.2

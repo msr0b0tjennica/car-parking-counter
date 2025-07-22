@@ -4,13 +4,24 @@ import cvzone # type: ignore
 import numpy as np
 import sys
 
-# Constants
-PARKING_SPOT_WIDTH = 107
-PARKING_SPOT_HEIGHT = 48
-OCCUPIED_THRESHOLD = 900
-GAUSSIAN_BLUR_KERNEL = (3, 3)
-ADAPTIVE_THRESH_BLOCK_SIZE = 25
-ADAPTIVE_THRESH_CONSTANT = 16
+from config_loader import load_config
+
+config = load_config()
+
+# Parking configuration
+PARKING_SPOT_WIDTH     = config["parking"]["spot_width"]
+PARKING_SPOT_HEIGHT    = config["parking"]["spot_height"]
+OCCUPIED_THRESHOLD     = config["parking"]["occupied_threshold"]
+
+# Preprocessing parameters
+GAUSSIAN_BLUR_KERNEL   = tuple(config["preprocessing"]["gaussian_blur_kernel"])
+ADAPTIVE_THRESH_BLOCK_SIZE = config["preprocessing"]["adaptive_thresh_block_size"]
+ADAPTIVE_THRESH_CONSTANT   = config["preprocessing"]["adaptive_thresh_constant"]
+
+# Image adjustment
+BRIGHTNESS = config["adjustment"]["brightness"]
+CONTRAST   = config["adjustment"]["contrast"]
+
 
 def load_parking_positions(filename):
     try:
@@ -70,6 +81,9 @@ def main():
         success, img = video_source.read()
         if not success:
             break  # Or handle retries more robustly
+
+        # Adjust brightness and contrast
+        img = cv2.convertScaleAbs(img, alpha=CONTRAST, beta=BRIGHTNESS)
 
         processed_img = process_image_for_detection(img)
         check_parking_space(processed_img, img, pos_list)
