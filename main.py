@@ -96,13 +96,21 @@ def main():
     if not pos_list:
         print("Error: No parking positions loaded")
         return
+    
+    previous_frame = None
 
     while True:
         success, img = video_source.read()
         if not success:
-            break  # Or handle retries more robustly
+            print("⚠️ Frame failed to load — using previous frame")
+            if previous_frame is None:
+                print("❌ No previous frame to fall back on. Skipping video.")
+                break
+            img = previous_frame.copy()
+        else:
+            previous_frame = img.copy()
 
-        # 🧪 Read trackbar values
+        # 🧪Read trackbar values
         brightness = cv2.getTrackbarPos("Brightness", "Adjustments")
         contrast_raw = cv2.getTrackbarPos("Contrast", "Adjustments")
         contrast = contrast_raw / 10.0  # Convert 10 → 1.0, 15 → 1.5, etc.
