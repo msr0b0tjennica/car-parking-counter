@@ -8,6 +8,6 @@ preprocessing:
   adaptive_thresh_block_size: 25
   adaptive_thresh_constant: 16
 
-adjustment:
-  brightness: 30
-  contrast: 1.2
+# adjustment:
+#   brightness: 30
+#   contrast: 1.2

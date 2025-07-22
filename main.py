@@ -18,9 +18,9 @@ GAUSSIAN_BLUR_KERNEL   = tuple(config["preprocessing"]["gaussian_blur_kernel"])
 ADAPTIVE_THRESH_BLOCK_SIZE = config["preprocessing"]["adaptive_thresh_block_size"]
 ADAPTIVE_THRESH_CONSTANT   = config["preprocessing"]["adaptive_thresh_constant"]
 
-# Image adjustment
-BRIGHTNESS = config["adjustment"]["brightness"]
-CONTRAST   = config["adjustment"]["contrast"]
+# # Image adjustment
+# BRIGHTNESS = config["adjustment"]["brightness"]
+# CONTRAST   = config["adjustment"]["contrast"]
 
 
 def load_parking_positions(filename):
@@ -64,6 +64,7 @@ def check_parking_space(img_pro, img_display, pos_list):
         (30, 50), scale=2, thickness=3, offset=20, colorR=(0, 200, 0)
     )
 
+
 def main():
     input_source = sys.argv[1] if len(sys.argv) > 1 else 0
     video_source = cv2.VideoCapture(input_source)
@@ -71,6 +72,12 @@ def main():
     if not video_source.isOpened():
         print("Error: Could not open video source")
         return
+    
+    def nothing(x):
+        pass
+    cv2.namedWindow("Adjustments")
+    cv2.createTrackbar("Brightness", "Adjustments", 30, 100, nothing)  # Default: 30
+    cv2.createTrackbar("Contrast", "Adjustments", 10, 30, nothing)     # Default: 10 (represents 1.0)
 
     pos_list = load_parking_positions('CarParkPos')
     if not pos_list:
@@ -82,8 +89,13 @@ def main():
         if not success:
             break  # Or handle retries more robustly
 
+        # 🧪 Read trackbar values
+        brightness = cv2.getTrackbarPos("Brightness", "Adjustments")
+        contrast_raw = cv2.getTrackbarPos("Contrast", "Adjustments")
+        contrast = contrast_raw / 10.0  # Convert 10 → 1.0, 15 → 1.5, etc.
+
         # Adjust brightness and contrast
-        img = cv2.convertScaleAbs(img, alpha=CONTRAST, beta=BRIGHTNESS)
+        img = cv2.convertScaleAbs(img, alpha=contrast, beta=brightness)
 
         processed_img = process_image_for_detection(img)
         check_parking_space(processed_img, img, pos_list)
