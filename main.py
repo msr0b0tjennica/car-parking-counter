@@ -4,6 +4,8 @@ import cvzone # type: ignore
 import numpy as np
 import sys
 
+from tkinter import Tk, filedialog
+
 from config_loader import load_config
 
 config = load_config()
@@ -66,7 +68,18 @@ def check_parking_space(img_pro, img_display, pos_list):
 
 
 def main():
-    input_source = sys.argv[1] if len(sys.argv) > 1 else 0
+
+    # Open a file dialog to select a video file
+    Tk().withdraw()  # Hide the root Tk window
+    input_source = filedialog.askopenfilename(
+    title="Select Video File",
+    filetypes=[("Video files", "*.mp4 *.avi *.mov *.mkv"), ("All files", "*.*")])
+
+    # If the user cancels, fall back to webcam
+    if input_source == "":
+        print("No file selected. Using webcam instead.")
+        input_source = 0
+
     video_source = cv2.VideoCapture(input_source)
     
     if not video_source.isOpened():
